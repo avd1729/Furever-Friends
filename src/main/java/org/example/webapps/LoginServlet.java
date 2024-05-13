@@ -3,18 +3,22 @@ package org.example.webapps;
 import java.io.*;
 import java.sql.*;
 import javax.servlet.*;
-import javax.servlet.annotation.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+import javax.ejb.EJB;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
+
+    @EJB
+    private SessionBean sessionBean;
+
     // JDBC URL, username, and password of MySQL server
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/pet_adoption";
     private static final String JDBC_USER = "root";
     private static final String JDBC_PASSWORD = "rootpass";
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -45,10 +49,16 @@ public class LoginServlet extends HttpServlet {
                 // Execute the query
                 ResultSet resultSet = statement.executeQuery();
                 if (resultSet.next()) {
-                    // Login successful, store user details in session and redirect to dashboard
-                    HttpSession session = request.getSession();
-                    session.setAttribute("username", username);
-                    response.sendRedirect("dashboard.jsp");
+                    // Login successful, create session and redirect to dashboard with session ID
+                    HttpSession httpSession = request.getSession();
+                    String sessionId = httpSession.getId();
+                    sessionBean.createSession(sessionId, username); // Creating session in SessionBean
+
+                    // Set sessionBean into session attribute
+                    httpSession.setAttribute("sessionBean", sessionBean);
+
+                    // Redirect to dashboard.jsp with session ID
+                    response.sendRedirect("dashboard.jsp?sessionId=" + sessionId);
                 } else {
                     // Login failed, redirect back to login page with error message
                     response.sendRedirect("login.jsp?error=invalid");
@@ -61,4 +71,8 @@ public class LoginServlet extends HttpServlet {
         }
     }
 }
+
+
+
+
 
