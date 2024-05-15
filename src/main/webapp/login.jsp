@@ -14,11 +14,21 @@
 </head>
 <body>
 <h2>User Login</h2>
-<%-- Display error message if login failed --%>
-<% String error = request.getParameter("error");
-    if (error != null && error.equals("invalid")) { %>
+
+<%
+    // Check if there's an error message from the servlet
+    String error = request.getParameter("error");
+    if (error != null && error.equals("invalid")) {
+%>
 <p style="color: red;">Invalid username or password. Please try again.</p>
-<% } %>
+<%
+} else if (error != null && error.equals("dberror")) {
+%>
+<p style="color: red;">Database connection error. Please try again later.</p>
+<%
+    }
+%>
+
 <form action="login" method="post">
     <label for="username">Username:</label>
     <input type="text" id="username" name="username" required><br><br>
